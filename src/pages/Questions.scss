@@ -1,0 +1,20 @@
+.questions {
+    &__cards {
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+    }
+    &__card {
+        width: 90%;
+        max-width: 500px;
+        margin: .5rem auto;
+    }
+    &__button-container {
+        width: 100%;
+    }
+    &__button {
+        margin: 1.5rem auto 1rem auto;
+        display: block;
+        width: 8rem;
+    }
+}
