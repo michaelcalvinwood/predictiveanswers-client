@@ -1,8 +1,9 @@
 import './Questions.scss';
-import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonPage, IonTitle, IonToast, IonToolbar } from "@ionic/react";
+import { IonAlert, IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonPage, IonTitle, IonToast, IonToolbar } from "@ionic/react";
 import React, { useEffect, useRef, useState } from "react";
 import axios from 'axios';
-
+import { v4 as uuid } from 'uuid';
+import { RouteComponentProps, useHistory, withRouter } from 'react-router';
 
 interface Questions {
     num: number;
@@ -19,14 +20,21 @@ const Questions: React.FC = () => {
     const [questions, setQuestions] = useState<Questions[]>([]);
     const [answers, setAnswers] = useState<Answers[]>([]);
     const [toast, setToast] = useState<string>('');
+    const [userId, setUserId] = useState<string>(localStorage.getItem('userId') || '');
+    const [readyToSend, setReadyToSend] = useState<boolean>(false);
+    const [finished, setFinished] = useState<boolean>(false);
 
     const answerRef = useRef<HTMLIonInputElement>(null);
+
+    const history = useHistory();
 
     const submitAnswerHandler = () => {
         const answer: string = answerRef.current!.value!.toString();
         if (!answer) {
             setToast('Please enter a response.')
         }
+
+        console.log('submitAnswerHandler', curNum, answer, answers);
 
         setAnswers((curAnswers: Answers[]) => {
             curAnswers[curNum] = {
@@ -40,9 +48,41 @@ const Questions: React.FC = () => {
 
         if ((curNum + 1) < questions.length) {
             setCurNum(currentVal => currentVal + 1);
+        } else {
+            setReadyToSend(true);
+        } 
+    }
+
+    // When the number of answers equals the number of questions, post the answers to the server
+    useEffect(() => {
+        console.log('lengths', answers.length, questions.length);
+
+        if (!questions.length || answers.length < questions.length) return;
+
+        const dbAnswers = answers.map((answer, index) => {
+            const dbAnswer = {
+                id: userId,
+                questionNumber: index + 1,
+                answer: answer.answer
+            }
+            return dbAnswer;
+        });
+
+        const request = {
+            url: `https://predictiveanswers.com:8080/answers`,
+            method: 'post',
+            data: dbAnswers
         }
 
-    }
+        axios(request)
+        .then (result => {
+            setFinished(true);
+        })
+        .catch(error => {
+            console.log('error posting answers', request, error);
+        })
+
+    })
 
     useEffect(() => {
         const request = {
@@ -58,7 +98,26 @@ const Questions: React.FC = () => {
             .catch(err => {
                 console.log('Questions axios get questions', err);
             })
+
+        if (!userId) {
+            const uniqueId = uuid();
+            setUserId(uniqueId);
+            localStorage.setItem('userId', uniqueId);
+        }
     }, []);
+
+    if (finished) {
+        return (
+            <>
+                <IonAlert
+                    isOpen={finished}
+                    onDidDismiss={() => history.push('/results')}
+                    header={'All Done'}
+                    message={'Thank you for completing this questionaire.'}
+                    buttons={['OK']} />
+            </>
+        )
+    }
 
     return (
         <IonPage className="questions">
@@ -105,4 +164,4 @@ const Questions: React.FC = () => {
     )
 }
 
-export default Questions;
+export default withRouter(Questions);
