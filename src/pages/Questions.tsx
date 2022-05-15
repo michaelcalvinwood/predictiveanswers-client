@@ -3,7 +3,7 @@ import { IonAlert, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader
 import React, { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 import { v4 as uuid } from 'uuid';
-import { RouteComponentProps, useHistory, withRouter } from 'react-router';
+import { useHistory, withRouter } from 'react-router';
 import { logInOutline } from 'ionicons/icons';
 
 interface Questions {

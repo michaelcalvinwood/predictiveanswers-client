@@ -1,13 +1,58 @@
 import './Login.scss';
-import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonPage, IonTitle, IonToolbar } from "@ionic/react";
-import React, { useRef } from "react";
+import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonPage, IonTitle, IonToast, IonToolbar } from "@ionic/react";
+import React, { useRef, useState } from "react";
+import { useHistory, withRouter } from 'react-router';
+import axios from 'axios';
 
 const Login: React.FC = () => {
-    const emailRef = useRef<HTMLIonInputElement>(null);
+    const userRef = useRef<HTMLIonInputElement>(null);
     const passwordRef = useRef<HTMLIonInputElement>(null);
+    const [toast, setToast] = useState<string>('');
+
+    const history = useHistory();
 
     const submitCredentialsHandler = () => {
+        const user = userRef.current!.value!.toString();
+        const password = passwordRef.current!.value!.toString();
 
+        if (!user) {
+            setToast("Please enter an email address.");
+            return;
+        }
+
+        if (!password) {
+            setToast("Please enter a password");
+        }
+
+        const request = {
+            url: `https://predictiveanswers.com:8080/login`,
+            method: 'post',
+            data: {
+                user,
+                password
+            }
+        }
+
+        axios(request)
+        .then (response => {
+            if (!response.data.token) {
+                setToast("Invalid login");
+                return;
+            }
+
+            const token = response.data.token;
+
+            if (!token.length) {
+                setToast("Invalid login credentials.");
+                return;
+            }
+
+            sessionStorage.setItem('token', token);
+            history.push('/results');
+        })
+        .catch(error => {
+            setToast("Invalid login credentials.")
+        });
     }
     return (
         <IonPage className="login">
@@ -25,10 +70,10 @@ const Login: React.FC = () => {
                 <div className="login__content">
                     <div className="login__modal">
                         <IonItem>
-                            <IonLabel position="floating" color="primary">Email</IonLabel>
+                            <IonLabel position="floating" color="primary">User Name</IonLabel>
                             <IonInput
                                 type='text'
-                                ref={emailRef} />
+                                ref={userRef} />
                         </IonItem>
                         <IonItem>
                             <IonLabel position="floating" color="primary">Password</IonLabel>
@@ -44,8 +89,14 @@ const Login: React.FC = () => {
                     </div>
                 </div>
             </IonContent>
+            <IonToast
+                color="secondary"
+                message={toast}
+                isOpen={!!toast}
+                duration={2000}
+                onDidDismiss={() => setToast('')} />
         </IonPage>
     )
 }
 
-export default Login;
+export default withRouter(Login);
