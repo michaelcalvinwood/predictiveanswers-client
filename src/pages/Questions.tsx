@@ -1,9 +1,10 @@
 import './Questions.scss';
-import { IonAlert, IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonPage, IonTitle, IonToast, IonToolbar } from "@ionic/react";
+import { IonAlert, IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonPage, IonTitle, IonToast, IonToolbar } from "@ionic/react";
 import React, { useEffect, useRef, useState } from "react";
 import axios from 'axios';
 import { v4 as uuid } from 'uuid';
 import { RouteComponentProps, useHistory, withRouter } from 'react-router';
+import { logInOutline } from 'ionicons/icons';
 
 interface Questions {
     num: number;
@@ -14,6 +15,8 @@ interface Answers {
     num: number;
     answer: string;
 }
+
+let answersPosted = false;
 
 const Questions: React.FC = () => {
     const [curNum, setCurNum] = useState<number>(0);
@@ -50,14 +53,15 @@ const Questions: React.FC = () => {
             setCurNum(currentVal => currentVal + 1);
         } else {
             setReadyToSend(true);
-        } 
+        }
     }
 
     // When the number of answers equals the number of questions, post the answers to the server
     useEffect(() => {
-        console.log('lengths', answers.length, questions.length);
-
         if (!questions.length || answers.length < questions.length) return;
+
+        if (answersPosted) return;
+        answersPosted = true;
 
         const dbAnswers = answers.map((answer, index) => {
             const dbAnswer = {
@@ -75,12 +79,12 @@ const Questions: React.FC = () => {
         }
 
         axios(request)
-        .then (result => {
-            setFinished(true);
-        })
-        .catch(error => {
-            console.log('error posting answers', request, error);
-        })
+            .then(result => {
+                setFinished(true);
+            })
+            .catch(error => {
+                console.log('error posting answers', request, error);
+            })
 
     })
 
@@ -126,6 +130,11 @@ const Questions: React.FC = () => {
                     <IonTitle>
                         Questions
                     </IonTitle>
+                    <IonButtons slot="end">
+                        <IonButton routerLink="/login" color="light" routerDirection='none'>
+                            <IonIcon slot="icon-only" icon={logInOutline} />
+                        </IonButton>
+                    </IonButtons>
                 </IonToolbar>
             </IonHeader>
             <IonContent className="questions__cards">

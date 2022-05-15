@@ -5,6 +5,7 @@ import { Route, Redirect } from "react-router-dom";
 /* Import the App Pages */
 import Questions from './pages/Questions';
 import Results from './pages/Results';
+import Login from './pages/Login';
 
 /* Import navigation icons */
 import { helpOutline, newspaperOutline, logInOutline } from 'ionicons/icons';
@@ -44,6 +45,9 @@ const App: React.FC = () => {
             </Route>
             <Route path="/results">
               <Results />
+            </Route>
+            <Route path="/login">
+              <Login />
             </Route>
             <Redirect to="/questions" />
           </IonRouterOutlet>
