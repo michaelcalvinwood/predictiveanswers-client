@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "predictiveanswers-client",
+	"webDir": "build",
+	"bundledWebRuntime": false
+}
